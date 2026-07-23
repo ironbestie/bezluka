@@ -1,0 +1,315 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ restaurant.name }} — Аналитика{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 pb-24">
+    <!-- Шапка -->
+    <div class="bg-white shadow-sm p-4 flex items-center sticky top-0 z-10">
+        <a href="{% url 'core:owner_restaurants' %}" class="text-gray-600 mr-4 text-2xl leading-none">←</a>
+        <div class="flex-1">
+            <h1 class="text-lg font-bold text-gray-900">{{ restaurant.name }}</h1>
+            <p class="text-xs text-gray-500">{{ restaurant.city }}</p>
+        </div>
+        <a href="{% url 'core:edit_restaurant' restaurant.slug %}" class="text-gray-600 text-xl mr-3 hover:text-purple-600 transition">✏️</a>
+        <button class="text-gray-600 text-xl">📤</button>
+    </div>
+    
+    <!-- Галерея -->
+    {% if restaurant.gallery_images %}
+    <div class="bg-white mx-4 mt-4 rounded-2xl shadow-sm overflow-hidden">
+        <img src="{{ restaurant.gallery_images.0 }}" alt="{{ restaurant.name }}" class="w-full h-64 object-cover">
+        {% if restaurant.gallery_images|length > 1 %}
+        <div class="flex gap-2 p-4 overflow-x-auto">
+            {% for img in restaurant.gallery_images|slice:"1:" %}
+            <img src="{{ img }}" class="w-20 h-20 object-cover rounded-lg flex-shrink-0 cursor-pointer hover:opacity-80 transition">
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <!-- Переключатель периода -->
+    <div class="bg-white border-b border-gray-200 px-4 py-3 flex gap-2 overflow-x-auto">
+        <a href="?period=day&tab={{ tab }}" class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap {% if period == 'day' %}bg-purple-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">День</a>
+        <a href="?period=week&tab={{ tab }}" class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap {% if period == 'week' %}bg-purple-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">Неделя</a>
+        <a href="?period=month&tab={{ tab }}" class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap {% if period == 'month' %}bg-purple-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">Месяц</a>
+        <a href="?period=quarter&tab={{ tab }}" class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap {% if period == 'quarter' %}bg-purple-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">Квартал</a>
+        <a href="?period=year&tab={{ tab }}" class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap {% if period == 'year' %}bg-purple-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">Год</a>
+    </div>
+    
+    <!-- Ключевые метрики -->
+    <div class="p-4 grid grid-cols-2 gap-3">
+        <div class="bg-white rounded-2xl p-4 shadow-sm">
+            <p class="text-xs text-gray-500 mb-1">💰 Средний чек</p>
+            <p class="text-2xl font-bold text-gray-900">{{ avg_check }} ₽</p>
+        </div>
+        <div class="bg-white rounded-2xl p-4 shadow-sm">
+            <p class="text-xs text-gray-500 mb-1">👥 Уникальных гостей</p>
+            <p class="text-2xl font-bold text-gray-900">{{ unique_guests }}</p>
+        </div>
+        <div class="bg-white rounded-2xl p-4 shadow-sm">
+            <p class="text-xs text-gray-500 mb-1">🍽️ Обслужено столов</p>
+            <p class="text-2xl font-bold text-gray-900">{{ tables_served }}</p>
+        </div>
+        <div class="bg-white rounded-2xl p-4 shadow-sm">
+            <p class="text-xs text-gray-500 mb-1"> Повторные визиты</p>
+            <p class="text-2xl font-bold text-gray-900">{{ repeat_visits_percent }}%</p>
+        </div>
+    </div>
+    
+    <!-- Дополнительные метрики -->
+    <div class="px-4 grid grid-cols-3 gap-3 mb-4">
+        <div class="bg-white rounded-2xl p-3 shadow-sm text-center">
+            <p class="text-xs text-gray-500">LTV</p>
+            <p class="text-lg font-bold text-gray-900">{{ total_revenue|floatformat:0 }} ₽</p>
+        </div>
+        <div class="bg-white rounded-2xl p-3 shadow-sm text-center">
+            <p class="text-xs text-gray-500">Частота</p>
+            <p class="text-lg font-bold text-gray-900">{{ visit_frequency }}</p>
+        </div>
+        <div class="bg-white rounded-2xl p-3 shadow-sm text-center">
+            <p class="text-xs text-gray-500">Отзывов</p>
+            <p class="text-lg font-bold text-gray-900">{{ reviews_count }}</p>
+        </div>
+    </div>
+    
+    <!-- Вкладки -->
+    <div class="bg-white border-b border-gray-200 px-4 flex gap-1">
+        <a href="?period={{ period }}&tab=attendance" class="flex-1 py-3 text-sm font-semibold text-center border-b-2 {% if tab == 'attendance' %}border-purple-600 text-purple-600{% else %}border-transparent text-gray-500{% endif %}"> Посещаемость</a>
+        <a href="?period={{ period }}&tab=ratings" class="flex-1 py-3 text-sm font-semibold text-center border-b-2 {% if tab == 'ratings' %}border-purple-600 text-purple-600{% else %}border-transparent text-gray-500{% endif %}">⭐ Рейтинги</a>
+        <a href="?period={{ period }}&tab=bookings" class="flex-1 py-3 text-sm font-semibold text-center border-b-2 {% if tab == 'bookings' %}border-purple-600 text-purple-600{% else %}border-transparent text-gray-500{% endif %}">📅 Брони</a>
+        <a href="?period={{ period }}&tab=staff" class="flex-1 py-3 text-sm font-semibold text-center border-b-2 {% if tab == 'staff' %}border-purple-600 text-purple-600{% else %}border-transparent text-gray-500{% endif %}"> Персонал</a>
+    </div>
+    
+    <!-- Контент вкладок -->
+    <div class="p-4">
+        
+        {% if tab == 'attendance' %}
+        <!-- === ВКЛАДКА ПОСЕЩАЕМОСТЬ === -->
+        <div class="bg-white rounded-2xl p-5 shadow-sm mb-4">
+            <h3 class="font-bold text-gray-900 mb-4">Посещаемость по дням</h3>
+            <canvas id="attendanceChart" height="200"></canvas>
+        </div>
+        
+        <div class="bg-white rounded-2xl p-5 shadow-sm mb-4">
+            <h3 class="font-bold text-gray-900 mb-4">Источники бронирований</h3>
+            {% if sources %}
+                {% for source in sources %}
+                <div class="mb-3">
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-gray-700">{{ source.label }}</span>
+                        <span class="font-semibold text-gray-900">{{ source.percent }}%</span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-2">
+                        <div class="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full" style="width: {{ source.percent }}%"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">{{ source.count }} броней</p>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-gray-500 text-center py-4">Нет данных за выбранный период</p>
+            {% endif %}
+        </div>
+        
+        <div class="bg-white rounded-2xl p-5 shadow-sm">
+            <h3 class="font-bold text-gray-900 mb-2">Коэффициент отмены</h3>
+            <div class="flex items-end justify-between mb-3">
+                <p class="text-3xl font-bold {% if cancellation_rate > 10 %}text-red-600{% elif cancellation_rate > 5 %}text-yellow-600{% else %}text-green-600{% endif %}">{{ cancellation_rate }}%</p>
+                <p class="text-sm text-gray-500">{{ cancelled_count }} из {{ total_bookings }}</p>
+            </div>
+            <div class="w-full bg-gray-100 rounded-full h-3">
+                <div class="h-3 rounded-full {% if cancellation_rate > 10 %}bg-red-500{% elif cancellation_rate > 5 %}bg-yellow-500{% else %}bg-green-500{% endif %}" style="width: {{ cancellation_rate }}%"></div>
+            </div>
+            <p class="text-xs text-gray-500 mt-2">Цель: менее 5%</p>
+        </div>
+
+        {% elif tab == 'ratings' %}
+        <!-- === ВКЛАДКА РЕЙТИНГИ === -->
+        <div class="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl p-6 text-white shadow-lg mb-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm opacity-80">Общий рейтинг</p>
+                    <p class="text-5xl font-bold">{{ avg_rating }}</p>
+                    <p class="text-sm opacity-80 mt-1">{{ reviews_count }} отзывов за период</p>
+                </div>
+                <div class="text-5xl">⭐</div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-2xl p-5 shadow-sm">
+            <h3 class="font-bold text-gray-900 mb-4">Распределение оценок</h3>
+            {% for item in rating_dist %}
+            <div class="flex items-center mb-2">
+                <span class="w-8 text-sm font-semibold text-gray-700">{{ item.stars }} ★</span>
+                <div class="flex-1 bg-gray-100 rounded-full h-3 mx-2">
+                    {% if reviews_count > 0 %}
+                    <div class="bg-yellow-400 h-3 rounded-full" style="width: {% widthratio item.count reviews_count 100 %}%"></div>
+                    {% endif %}
+                </div>
+                <span class="w-10 text-sm text-gray-600 text-right">{{ item.count }}</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Отзывы -->
+        <div class="bg-white rounded-2xl p-5 shadow-sm mt-4">
+            <h3 class="font-bold text-gray-900 mb-4">Последние отзывы</h3>
+            <div class="space-y-4">
+                {% for review in all_restaurant_reviews %}
+                <div class="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <p class="font-semibold text-gray-900">{{ review.user.first_name|default:"Гость" }}</p>
+                            <p class="text-xs text-gray-400">{{ review.created_at|date:"d.m.Y H:i" }}</p>
+                        </div>
+                        <div class="text-yellow-500 text-sm">
+                            {% for i in "12345" %}{% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}{% endfor %}
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-700 mb-2">{{ review.text }}</p>
+                    <div class="flex gap-3 text-xs text-gray-500">
+                        <span>Обслуживание: {{ review.service_rating }}/5</span>
+                        <span>Цена/качество: {{ review.price_quality_rating }}/5</span>
+                        <span>Атмосфера: {{ review.atmosphere_rating }}/5</span>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-gray-500 text-center py-4">Пока нет отзывов</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% elif tab == 'bookings' %}
+        <!-- === ВКЛАДКА БРОНИРОВАНИЯ === -->
+        <div class="grid grid-cols-3 gap-3 mb-4">
+            <div class="bg-blue-50 rounded-2xl p-3 text-center">
+                <p class="text-xs text-blue-600">Предстоящие</p>
+                <p class="text-2xl font-bold text-blue-700">{{ upcoming_bookings.count }}</p>
+            </div>
+            <div class="bg-green-50 rounded-2xl p-3 text-center">
+                <p class="text-xs text-green-600">Завершенные</p>
+                <p class="text-2xl font-bold text-green-700">{{ completed_bookings_list.count }}</p>
+            </div>
+            <div class="bg-red-50 rounded-2xl p-3 text-center">
+                <p class="text-xs text-red-600">Отмененные</p>
+                <p class="text-2xl font-bold text-red-700">{{ cancelled_bookings_list.count }}</p>
+            </div>
+        </div>
+        
+        <div class="space-y-3">
+            {% for booking in all_bookings %}
+            <div class="bg-white rounded-2xl p-4 shadow-sm">
+                <div class="flex justify-between items-start mb-2">
+                    <div>
+                        <p class="font-bold text-gray-900">{{ booking.guest_name }}</p>
+                        <p class="text-xs text-gray-500">{{ booking.guest_phone }}</p>
+                    </div>
+                    {% if booking.status == 'confirmed' %}
+                        <span class="bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-1 rounded-full">Подтверждено</span>
+                    {% elif booking.status == 'completed' %}
+                        <span class="bg-green-100 text-green-700 text-xs font-semibold px-2 py-1 rounded-full">Завершено</span>
+                    {% elif booking.status == 'cancelled_by_user' or booking.status == 'cancelled_by_restaurant' %}
+                        <span class="bg-red-100 text-red-700 text-xs font-semibold px-2 py-1 rounded-full">Отменено</span>
+                    {% endif %}
+                </div>
+                <div class="flex items-center gap-3 text-sm text-gray-600">
+                    <span>📅 {{ booking.booking_datetime|date:"d.m.Y" }}</span>
+                    <span>🕐 {{ booking.booking_datetime|time:"H:i" }}</span>
+                    <span>👥 {{ booking.party_size }} чел.</span>
+                </div>
+                {% if booking.comment %}
+                <p class="text-xs text-gray-500 mt-2 italic">💬 {{ booking.comment }}</p>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="bg-white rounded-2xl p-8 text-center">
+                <p class="text-gray-500">Пока нет бронирований</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% elif tab == 'staff' %}
+        <!-- === ВКЛАДКА ПЕРСОНАЛ === -->
+        {% if staff %}
+            <div class="space-y-3">
+                {% for member in staff %}
+                <div class="bg-white rounded-2xl p-5 shadow-sm">
+                    <div class="flex items-start mb-3">
+                        <div class="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white text-xl font-bold mr-4">
+                            {{ member.full_name|slice:":1" }}
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-900">{{ member.full_name }}</h3>
+                            <p class="text-sm text-gray-500">{{ member.get_position_display }} · {{ member.experience_years }} лет опыта</p>
+                            {% if forloop.counter == 1 %}
+                                <span class="inline-block mt-1 text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">🥇 Лучший</span>
+                            {% elif forloop.counter == 2 %}
+                                <span class="inline-block mt-1 text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full">🥈 2 место</span>
+                            {% elif forloop.counter == 3 %}
+                                <span class="inline-block mt-1 text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full"> 3 место</span>
+                            {% endif %}
+                        </div>
+                        <div class="text-right">
+                            <p class="text-2xl font-bold text-gray-900">{{ member.csat_score }}%</p>
+                            <p class="text-xs text-gray-500">CSAT</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-2 pt-3 border-t border-gray-100">
+                        <div class="text-center">
+                            <p class="text-xs text-gray-500">⭐ Рейтинг</p>
+                            <p class="font-semibold text-gray-900">{{ member.csat_score }}%</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-xs text-gray-500">⚠️ Жалобы</p>
+                            <p class="font-semibold text-gray-900">{{ member.complaints_count }}</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-xs text-gray-500">💰 Чаевые</p>
+                            <p class="font-semibold text-gray-900">{{ member.tips_total }} ₽</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="bg-white rounded-2xl p-12 text-center">
+                <div class="text-6xl mb-4">👥</div>
+                <h2 class="text-xl font-bold text-gray-900 mb-2">Пока нет сотрудников</h2>
+                <p class="text-gray-500">Добавьте персонал через админ-панель</p>
+            </div>
+        {% endif %}
+        {% endif %}
+        
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    {% if tab == 'attendance' %}
+    const ctx = document.getElementById('attendanceChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ attendance_labels|safe }},
+            datasets: [{
+                label: 'Бронирований',
+                data: {{ attendance_values|safe }},
+                borderColor: 'rgb(168, 85, 247)',
+                backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                tension: 0.4,
+                fill: true,
+                borderWidth: 2,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
+    {% endif %}
+</script>
+{% endblock %}

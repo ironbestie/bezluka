@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}Мои рестораны{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 pb-24">
+    <!-- Шапка -->
+    <div class="bg-white shadow-sm p-4 flex items-center sticky top-0 z-10">
+        <h1 class="text-lg font-bold text-gray-900 flex-1">Мои рестораны</h1>
+        <a href="{% url 'core:logout' %}" class="text-sm text-red-600">Выйти</a>
+    </div>
+    
+    <!-- Общая статистика -->
+    <div class="bg-gradient-to-r from-purple-600 to-pink-600 p-6 text-white">
+        <p class="text-sm opacity-80 mb-1">Владелец: {{ owner_profile.company_name|default:user.first_name }}</p>
+        <div class="grid grid-cols-3 gap-3 mt-4">
+            <div>
+                <p class="text-xs opacity-80">Выручка</p>
+                <p class="text-xl font-bold">{{ total_revenue|floatformat:0 }} ₽</p>
+            </div>
+            <div>
+                <p class="text-xs opacity-80">Броней</p>
+                <p class="text-xl font-bold">{{ total_bookings_count }}</p>
+            </div>
+            <div>
+                <p class="text-xs opacity-80">Отзывов</p>
+                <p class="text-xl font-bold">{{ total_reviews }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Уведомления -->
+    {% if messages %}
+    <div class="p-4">
+        {% for message in messages %}
+        <div class="bg-green-100 text-green-700 p-3 rounded-lg text-sm">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Кнопка добавить -->
+    <div class="p-4">
+        <a href="{% url 'core:add_restaurant' %}" 
+           class="block w-full bg-white border-2 border-dashed border-purple-300 text-purple-600 py-4 rounded-2xl font-semibold text-center hover:bg-purple-50 transition">
+            + Добавить ресторан
+        </a>
+    </div>
+    
+    <!-- Список ресторанов -->
+    <div class="px-4 pb-6 space-y-3">
+        {% for restaurant in restaurants %}
+        <a href="{% url 'core:restaurant_analytics' restaurant.slug %}" 
+           class="block bg-white rounded-2xl shadow-sm p-4 hover:shadow-md transition">
+            <div class="flex items-start justify-between mb-2">
+                <div class="flex-1">
+                    <h3 class="font-bold text-gray-900 text-lg">{{ restaurant.name }}</h3>
+                    <p class="text-sm text-gray-500">{{ restaurant.city }}, {{ restaurant.address }}</p>
+                </div>
+                {% if restaurant.is_active %}
+                    <span class="bg-green-100 text-green-700 text-xs font-semibold px-2 py-1 rounded-full">Активен</span>
+                {% else %}
+                    <span class="bg-gray-100 text-gray-700 text-xs font-semibold px-2 py-1 rounded-full">Скрыт</span>
+                {% endif %}
+            </div>
+            
+            <div class="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-gray-100 text-center">
+                <div>
+                    <p class="text-xs text-gray-500">Рейтинг</p>
+                    <p class="font-semibold text-gray-900">⭐ {{ restaurant.overall_rating }}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500">Отзывов</p>
+                    <p class="font-semibold text-gray-900">{{ restaurant.total_reviews }}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500">Ср. чек</p>
+                    <p class="font-semibold text-gray-900">{{ restaurant.avg_check }} ₽</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center justify-between mt-3 text-sm">
+                <span class="text-gray-500">{{ restaurant.cuisine_type }}</span>
+                <span class="text-purple-600 font-semibold">Аналитика →</span>
+            </div>
+        </a>
+        {% empty %}
+        <div class="bg-white rounded-2xl p-12 text-center">
+            <div class="text-6xl mb-4">🍽️</div>
+            <h2 class="text-xl font-bold text-gray-900 mb-2">Пока нет ресторанов</h2>
+            <p class="text-gray-500 mb-6">Добавьте свой первый ресторан, чтобы начать работу</p>
+            <a href="{% url 'core:add_restaurant' %}" 
+               class="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition">
+                Добавить ресторан
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

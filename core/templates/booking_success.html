@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Бронь подтверждена{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 flex flex-col">
+    <!-- Шапка -->
+    <div class="bg-white shadow-sm p-4 flex items-center">
+        <a href="{% url 'core:home' %}" class="text-gray-600 mr-4">←</a>
+        <h1 class="text-lg font-bold text-gray-900">Бронь подтверждена</h1>
+    </div>
+    
+    <!-- Контент -->
+    <div class="flex-1 flex flex-col items-center justify-center p-6">
+        <!-- Иконка успеха -->
+        <div class="w-24 h-24 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center text-white text-5xl mb-6 shadow-lg">
+            ✓
+        </div>
+        
+        <h2 class="text-2xl font-bold text-gray-900 mb-2 text-center">Бронь подтверждена!</h2>
+        <p class="text-gray-600 text-center mb-8">Мы ждём вас в ресторане</p>
+        
+        <!-- Карточка брони -->
+        <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-lg mb-6">
+            <div class="flex items-center mb-4 pb-4 border-b border-gray-100">
+                <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white text-2xl mr-3">
+                    🍽️
+                </div>
+                <div>
+                    <h3 class="font-bold text-gray-900">{{ booking.restaurant.name }}</h3>
+                    <p class="text-sm text-gray-500">{{ booking.restaurant.address }}</p>
+                </div>
+            </div>
+            
+            <div class="space-y-3">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">📅 Дата</span>
+                    <span class="font-semibold text-gray-900">{{ booking.booking_datetime|date:"d.m.Y" }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">🕐 Время</span>
+                    <span class="font-semibold text-gray-900">{{ booking.booking_datetime|time:"H:i" }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">👥 Гостей</span>
+                    <span class="font-semibold text-gray-900">{{ booking.party_size }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">📞 Телефон</span>
+                    <span class="font-semibold text-gray-900">{{ booking.guest_phone }}</span>
+                </div>
+                {% if booking.comment %}
+                <div class="pt-3 border-t border-gray-100">
+                    <p class="text-sm text-gray-600 mb-1">💬 Пожелания:</p>
+                    <p class="text-sm text-gray-900">{{ booking.comment }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Начисленные баллы -->
+        <div class="bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl p-5 w-full max-w-sm text-white shadow-lg mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm opacity-80">Вам начислено</p>
+                    <p class="text-3xl font-bold">+{{ booking.amount|default:"0" }} баллов</p>
+                </div>
+                <div class="text-5xl">🎁</div>
+            </div>
+        </div>
+        
+        <!-- Кнопки действий -->
+        <div class="w-full max-w-sm space-y-3">
+            <a href="{% url 'core:home' %}" 
+               class="block w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-xl font-semibold text-center hover:opacity-90 transition">
+                На главную
+            </a>
+            <a href="{% url 'core:profile' %}" 
+               class="block w-full bg-white border-2 border-gray-200 text-gray-900 py-3 rounded-xl font-semibold text-center hover:bg-gray-50 transition">
+                Мой профиль
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

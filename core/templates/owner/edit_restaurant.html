@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block title %}Редактировать {{ restaurant.name }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 pb-8">
+    <!-- Шапка -->
+    <div class="bg-white shadow-sm p-4 flex items-center sticky top-0 z-10">
+        <a href="{% url 'core:restaurant_analytics' restaurant.slug %}" class="text-gray-600 mr-4 text-2xl leading-none">←</a>
+        <h1 class="text-lg font-bold text-gray-900 flex-1">Редактирование</h1>
+    </div>
+    
+    <!-- Уведомления -->
+    {% if messages %}
+    <div class="p-4">
+        {% for message in messages %}
+        <div class="bg-green-100 text-green-700 p-3 rounded-lg text-sm">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Форма -->
+    <form method="post" enctype="multipart/form-data" class="p-4 space-y-4">
+        {% csrf_token %}
+        
+        <!-- Название -->
+        <div class="bg-white rounded-2xl p-5">
+            <label class="block text-sm font-semibold text-gray-900 mb-2">Название ресторана *</label>
+            <input type="text" name="name" required value="{{ restaurant.name }}"
+                   class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none">
+        </div>
+
+                <!-- Галерея фото -->
+        <div class="bg-white rounded-2xl p-5">
+            <label class="block text-sm font-semibold text-gray-900 mb-2">Фотографии ресторана</label>
+            <div class="space-y-3">
+                        <!-- Показываем текущие фото с возможностью удаления -->
+        {% if restaurant.gallery_images %}
+        <div class="mb-4">
+            <p class="text-xs text-gray-600 mb-2">Текущие фотографии (отметьте галочкой, чтобы удалить):</p>
+            <div class="grid grid-cols-2 gap-3">
+                {% for img in restaurant.gallery_images %}
+                <div class="flex items-center space-x-2 bg-gray-50 p-2 rounded-lg border border-gray-200">
+                    <img src="{{ img }}" class="w-16 h-16 object-cover rounded" alt="Фото">
+                    <label class="flex items-center space-x-1 cursor-pointer">
+                        <input type="checkbox" name="delete_photos" value="{{ img }}" class="rounded text-red-500 focus:ring-red-500 h-4 w-4">
+                        <span class="text-xs text-gray-600">Удалить</span>
+                    </label>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+                <div>
+                    <label class="block text-xs text-gray-600 mb-2">Добавить новые фото (можно несколько)</label>
+                    <input type="file" name="gallery_photos" multiple accept="image/*" 
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none text-sm">
+                    <p class="text-xs text-gray-500 mt-1">Загрузите фотографии интерьера, блюд, фасада</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Город и адрес -->
+        <div class="bg-white rounded-2xl p-5 space-y-4">
+            <div>
+                <label class="block text-sm font-semibold text-gray-900 mb-2">Город *</label>
+                <input type="text" name="city" required value="{{ restaurant.city }}"
+                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-900 mb-2">Адрес *</label>
+                <input type="text" name="address" required value="{{ restaurant.address }}"
+                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none">
+            </div>
+        </div>
+        
+        <!-- Кухня и чек -->
+        <div class="bg-white rounded-2xl p-5 space-y-4">
+            <div>
+                <label class="block text-sm font-semibold text-gray-900 mb-2">Тип кухни *</label>
+                <input type="text" name="cuisine_type" required value="{{ restaurant.cuisine_type }}"
+                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-900 mb-2">Средний чек (₽)</label>
+                <input type="number" name="avg_check" value="{{ restaurant.avg_check }}" min="0"
+                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none">
+            </div>
+        </div>
+        
+        <!-- Телефон и график -->
+        <div class="bg-white rounded-2xl p-5 space-y-4">
+            <div>
+                <label class="block text-sm font-semibold text-gray-900 mb-2">Телефон *</label>
+                <input type="tel" name="phone" required value="{{ restaurant.phone }}"
+                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-900 mb-2">График работы</label>
+                <input type="text" name="working_hours" value="{{ restaurant.working_hours }}"
+                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none">
+            </div>
+        </div>
+        
+        <!-- Описание -->
+        <div class="bg-white rounded-2xl p-5">
+            <label class="block text-sm font-semibold text-gray-900 mb-2">Описание</label>
+            <textarea name="description" rows="4"
+                      class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none resize-none">{{ restaurant.description }}</textarea>
+        </div>
+
+                <!-- Новые поля из PDF -->
+        <div class="bg-white rounded-2xl p-5 space-y-4">
+            <div>
+                <label class="block text-sm font-semibold text-gray-900 mb-2">Подзаголовок/слоган</label>
+                <input type="text" name="subtitle" value="{{ restaurant.subtitle }}" placeholder="A Taste of Perfection"
+                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-900 mb-2">Фишки заведения</label>
+                <textarea name="features" rows="2" placeholder="Ресторан с собственной культурой мяса"
+                          class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none">{{ restaurant.features }}</textarea>
+            </div>
+            <div class="grid grid-cols-3 gap-3">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-900 mb-2">Загруженность (%)</label>
+                    <input type="number" name="current_occupancy" value="{{ restaurant.current_occupancy }}" min="0" max="100"
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-900 mb-2">Шум (%)</label>
+                    <input type="number" name="current_noise_level" value="{{ restaurant.current_noise_level }}" min="0" max="100"
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-900 mb-2">Время обслуж. (мин)</label>
+                    <input type="number" name="current_service_time" value="{{ restaurant.current_service_time }}" min="0"
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none">
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-900 mb-2">Часы работы кухни</label>
+                <input type="text" name="kitchen_hours" value="{{ restaurant.kitchen_hours }}" placeholder="7:00 до 22:00"
+                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none">
+            </div>
+        </div>
+        
+        <!-- Статус (Активен/Скрыт) -->
+        <div class="bg-white rounded-2xl p-5 flex items-center justify-between">
+            <div>
+                <label class="block text-sm font-semibold text-gray-900">Статус ресторана</label>
+                <p class="text-xs text-gray-500 mt-1">Если выключено, ресторан не будет виден гостям</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" name="is_active" class="sr-only peer" {% if restaurant.is_active %}checked{% endif %}>
+                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+            </label>
+        </div>
+        
+        <!-- Кнопки -->
+        <div class="space-y-3 pt-2">
+            <button type="submit"
+                    class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 rounded-xl font-bold text-lg hover:opacity-90 transition shadow-lg">
+                Сохранить изменения
+            </button>
+            
+            <a href="{% url 'core:restaurant_analytics' restaurant.slug %}" 
+               class="block w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold text-center hover:bg-gray-200 transition">
+                Отмена
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

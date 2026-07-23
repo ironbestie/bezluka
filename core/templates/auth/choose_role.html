@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Выберите роль{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex flex-col p-6">
+    <!-- Заголовок -->
+    <div class="text-center mb-8 mt-8">
+        <h1 class="text-2xl font-bold text-gray-900">Выберите роль</h1>
+        <p class="text-sm text-gray-500 mt-2">Давайте определим ваши цели</p>
+    </div>
+    
+    <!-- Кнопки выбора -->
+    <form method="post" class="flex-1 space-y-4">
+        {% csrf_token %}
+        
+        <button 
+            type="submit" 
+            name="role" 
+            value="guest"
+            class="w-full bg-white border-2 border-gray-200 hover:border-purple-500 rounded-2xl p-6 text-left transition group"
+        >
+            <div class="flex items-center">
+                <div class="text-4xl mr-4">🍽️</div>
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900 group-hover:text-purple-600">Я гость</h3>
+                    <p class="text-sm text-gray-500">Бронировать столы, копить баллы, оставлять отзывы</p>
+                </div>
+            </div>
+        </button>
+        
+        <button 
+            type="submit" 
+            name="role" 
+            value="owner"
+            class="w-full bg-white border-2 border-gray-200 hover:border-purple-500 rounded-2xl p-6 text-left transition group"
+        >
+            <div class="flex items-center">
+                <div class="text-4xl mr-4">👔</div>
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900 group-hover:text-purple-600">Я управляю рестораном</h3>
+                    <p class="text-sm text-gray-500">Смотреть аналитику, управлять персоналом, получать отзывы</p>
+                </div>
+            </div>
+        </button>
+    </form>
+</div>
+{% endblock %}

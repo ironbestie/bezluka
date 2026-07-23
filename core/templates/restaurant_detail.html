@@ -1,0 +1,362 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ restaurant.name }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 pb-24">
+    
+    <!-- Шапка -->
+    <div class="bg-white shadow-sm p-4 flex items-center sticky top-0 z-20">
+        <a href="{% url 'core:home' %}" class="text-gray-600 mr-4 text-2xl leading-none">←</a>
+        <div class="flex-1"></div>
+        <form method="post" action="{% url 'core:toggle_favorite' restaurant.slug %}">
+            {% csrf_token %}
+            <button type="submit" class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition">
+                {% if is_favorited %}<span class="text-red-500 text-xl">♥</span>
+                {% else %}<span class="text-gray-400 text-xl">♡</span>{% endif %}
+            </button>
+        </form>
+    </div>
+
+    <!-- Заголовок ресторана -->
+    <div class="bg-white p-6 pb-4">
+        <div class="flex items-start justify-between mb-2">
+            <div class="flex-1">
+                <h1 class="text-3xl font-bold text-gray-900 mb-1">{{ restaurant.name }}</h1>
+                {% if restaurant.subtitle %}
+                <p class="text-sm text-gray-600 italic">{{ restaurant.subtitle }}</p>
+                {% endif %}
+            </div>
+            <div class="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                LOYALTY
+            </div>
+        </div>
+        <p class="text-sm text-gray-600 flex items-center">
+            <span class="mr-2">📍</span> {{ restaurant.city }}, {{ restaurant.address }}
+        </p>
+    </div>
+
+        <!-- Галерея -->
+    {% if restaurant.gallery_images %}
+    <div class="bg-white mx-4 mt-4 rounded-2xl shadow-sm overflow-hidden">
+        <!-- Главное фото -->
+        <img src="{{ restaurant.gallery_images.0 }}" alt="{{ restaurant.name }}" 
+             class="w-full h-64 object-cover cursor-pointer" 
+             onclick="openLightbox('{{ restaurant.gallery_images.0 }}')">
+        
+        <!-- Миниатюры -->
+        {% if restaurant.gallery_images|length > 1 %}
+        <div class="flex gap-2 p-4 overflow-x-auto">
+            {% for img in restaurant.gallery_images|slice:"1:" %}
+            <img src="{{ img }}" class="w-20 h-20 object-cover rounded-lg flex-shrink-0 cursor-pointer hover:opacity-80 transition" 
+                 onclick="openLightbox('{{ img }}')">
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- МОДАЛЬНОЕ ОКНО (ЛАЙТБОКС) ДЛЯ ПРОСМОТРА ФОТО -->
+    <div id="photoLightbox" class="fixed inset-0 bg-black/95 z-[100] hidden flex items-center justify-center p-4" onclick="closeLightbox()">
+        <!-- Кнопка закрытия -->
+        <button class="absolute top-4 right-4 text-white text-4xl hover:text-gray-300 z-10" onclick="closeLightbox()">×</button>
+        
+        <!-- Само фото -->
+        <img id="lightboxImage" src="" class="max-h-[90vh] max-w-[90vw] object-contain rounded-lg shadow-2xl" onclick="event.stopPropagation()">
+    </div>
+
+    <!-- Фишки заведения -->
+    {% if restaurant.features %}
+    <div class="bg-white border-t border-b border-gray-100 mx-4 mt-4 rounded-2xl shadow-sm px-5 py-4">
+        <p class="text-sm font-semibold text-gray-900 mb-1">Фишки заведения / О ресторане</p>
+        <p class="text-sm text-gray-700 leading-relaxed">{{ restaurant.features }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Сетка метрик -->
+    <div class="bg-white mx-4 mt-4 rounded-2xl shadow-sm p-4">
+        <div class="grid grid-cols-2 gap-4">
+            <div class="border-r border-gray-100 pr-3">
+                <p class="text-xs text-gray-500 mb-1">Средний чек</p>
+                <p class="text-lg font-bold text-gray-900">{{ restaurant.avg_check }} ₽</p>
+            </div>
+            <div class="pl-2">
+                <p class="text-xs text-gray-500 mb-1">Возвращаемость</p>
+                <p class="text-lg font-bold text-gray-900">{{ restaurant.return_rate }}%</p>
+            </div>
+            <div class="border-r border-gray-100 pr-3 pt-3">
+                <p class="text-xs text-gray-500 mb-1">Людей рекомендует</p>
+                <p class="text-lg font-bold text-gray-900">{{ restaurant.recommend_count }}</p>
+            </div>
+            <div class="pl-2 pt-3">
+                <p class="text-xs text-gray-500 mb-1">Вам подходит на</p>
+                <p class="text-lg font-bold text-gray-900">{{ restaurant.match_percent }}%</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Метрики реального времени -->
+    <div class="bg-white mx-4 mt-4 rounded-2xl shadow-sm p-4 space-y-4">
+        <div class="flex justify-between items-center">
+            <div class="flex-1">
+                <p class="text-sm font-semibold text-gray-900">Загруженность ресторана</p>
+                <p class="text-xs text-gray-500">Сейчас: {{ restaurant.current_occupancy }}%</p>
+            </div>
+            <div class="w-24 bg-gray-200 rounded-full h-2">
+                <div class="bg-purple-500 h-2 rounded-full" style="width: {{ restaurant.current_occupancy }}%"></div>
+            </div>
+        </div>
+        <div class="flex justify-between items-center">
+            <div class="flex-1">
+                <p class="text-sm font-semibold text-gray-900">Уровень шума в заведении</p>
+                <p class="text-xs text-gray-500">Сейчас: {{ restaurant.current_noise_level }}%</p>
+            </div>
+            <div class="w-24 bg-gray-200 rounded-full h-2">
+                <div class="bg-yellow-500 h-2 rounded-full" style="width: {{ restaurant.current_noise_level }}%"></div>
+            </div>
+        </div>
+        <div class="flex justify-between items-center">
+            <div class="flex-1">
+                <p class="text-sm font-semibold text-gray-900">Скорость обслуживания</p>
+                <p class="text-xs text-gray-500">Сейчас: {{ restaurant.current_service_time }} минут</p>
+            </div>
+            <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">Отлично</span>
+        </div>
+    </div>
+
+    <!-- График работы -->
+    <div class="bg-white mx-4 mt-4 rounded-2xl shadow-sm p-4">
+        <div class="flex justify-between items-center mb-2">
+            <p class="text-sm font-semibold text-gray-900">График работы</p>
+            <span class="text-xs text-gray-500">Сегодня {{ restaurant.working_hours }}</span>
+        </div>
+        {% if restaurant.kitchen_hours %}
+        <p class="text-xs text-gray-600 mb-1">Кухня работает с {{ restaurant.kitchen_hours }}</p>
+        {% endif %}
+        <p class="text-xs text-gray-500">Тип кухни: {{ restaurant.cuisine_type }}</p>
+    </div>
+
+    <!-- Рейтинги -->
+    <div class="bg-white mx-4 mt-4 rounded-2xl shadow-sm p-5">
+        <h3 class="font-bold text-gray-900 mb-4">Уровень сервиса</h3>
+        <div class="flex items-center mb-4">
+            <div class="text-4xl font-bold text-gray-900 mr-4">{{ restaurant.overall_rating }}</div>
+            <div class="flex-1">
+                {% for stars, percent in rating_percentages.items %}
+                <div class="flex items-center mb-1">
+                    <span class="text-xs text-gray-600 w-4">{{ stars }}</span>
+                    <div class="flex-1 bg-gray-100 rounded-full h-2 mx-2">
+                        <div class="bg-yellow-400 h-2 rounded-full" style="width: {{ percent }}%"></div>
+                    </div>
+                    <span class="text-xs text-gray-500 w-8 text-right">{{ percent }}%</span>
+                </div>
+                {% endfor %}
+                <p class="text-xs text-gray-400 mt-2">{{ total_reviews_count }} отзывов</p>
+            </div>
+        </div>
+
+        <div class="border-t border-gray-100 pt-4 space-y-3">
+            <p class="text-sm font-semibold text-gray-900 mb-2">Рейтинг персонала</p>
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="text-xs text-gray-600">Качество обслуживания</p>
+                    <p class="text-xs text-gray-400">Отлично</p>
+                </div>
+                <div class="text-right"><p class="text-lg font-bold text-gray-900">{{ staff_service_rating }}</p></div>
+            </div>
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="text-xs text-gray-600">Соответствие цена/качество</p>
+                    <p class="text-xs text-gray-400">Оправдана ли стоимость</p>
+                </div>
+                <div class="text-right"><p class="text-lg font-bold text-gray-900">{{ staff_price_quality_rating }}</p></div>
+            </div>
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="text-xs text-gray-600">Атмосфера</p>
+                    <p class="text-xs text-gray-400">Соответствует ли ожиданиям</p>
+                </div>
+                <div class="text-right"><p class="text-lg font-bold text-gray-900">{{ staff_atmosphere_rating }}</p></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Меню (превью) -->
+    <div class="bg-white mx-4 mt-4 rounded-2xl shadow-sm p-5">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold text-gray-900">Меню</h3>
+            <a href="#" class="text-sm text-purple-600 font-medium">Полное меню →</a>
+        </div>
+        <div class="space-y-4">
+            {% for category in menu_categories %}
+                {% for item in category.items.all|slice:":3" %}
+                {% if item.is_active %}
+                <div class="flex justify-between items-start">
+                    <div class="flex-1 pr-4">
+                        <div class="flex items-center gap-2 mb-1">
+                            <p class="font-semibold text-gray-900">{{ item.name }}</p>
+                            {% if item.is_popular %}<span class="text-[10px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded">Хит</span>{% endif %}
+                        </div>
+                        <p class="text-xs text-gray-500 line-clamp-2">{{ item.description }}</p>
+                    </div>
+                    <p class="font-bold text-gray-900 whitespace-nowrap">{{ item.price }} ₽</p>
+                </div>
+                {% endif %}
+                {% endfor %}
+            {% empty %}
+            <p class="text-sm text-gray-500 text-center py-4">Меню пока не добавлено</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Отзывы + Форма добавления -->
+    <div class="bg-white mx-4 mt-4 rounded-2xl shadow-sm p-5 mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold text-gray-900">Отзывы</h3>
+            <a href="#" class="text-sm text-purple-600 font-medium">Все отзывы →</a>
+        </div>
+        
+        <div class="space-y-4 mb-6">
+            {% for review in reviews %}
+            <div class="border-b border-gray-50 pb-4 last:border-0 last:pb-0">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white text-xs font-bold mr-2">
+                            {{ review.user.first_name|slice:":1"|default:"Г" }}
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-gray-900">{{ review.user.first_name|default:"Гость" }}</p>
+                            <p class="text-xs text-gray-400">{{ review.created_at|date:"d E" }}</p>
+                        </div>
+                    </div>
+                    <div class="text-yellow-500 text-sm">
+                        {% for i in "12345" %}{% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}{% endfor %}
+                    </div>
+                </div>
+                <p class="text-sm text-gray-700 leading-relaxed">{{ review.text }}</p>
+            </div>
+            {% empty %}
+            <p class="text-sm text-gray-500 text-center py-4">Пока нет отзывов. Будьте первым!</p>
+            {% endfor %}
+        </div>
+        
+        <!-- Форма добавления отзыва -->
+        <div class="border-t border-gray-100 pt-4" x-data="{ showForm: false }">
+            <button @click="showForm = !showForm" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-xl font-semibold hover:opacity-90 transition">
+                ✍️ Добавить отзыв
+            </button>
+            
+            <div x-show="showForm" x-transition class="mt-4 space-y-3">
+                <form method="post" action="{% url 'core:add_review' restaurant.slug %}">
+                    {% csrf_token %}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Ваш отзыв</label>
+                        <textarea name="text" rows="3" required placeholder="Расскажите о вашем опыте..." class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none resize-none"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Общая оценка</label>
+                        <select name="rating" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none">
+                            <option value="5" selected>⭐⭐⭐⭐⭐ (5)</option>
+                            <option value="4">⭐⭐⭐⭐ (4)</option>
+                            <option value="3">⭐⭐⭐ (3)</option>
+                            <option value="2">⭐⭐ (2)</option>
+                            <option value="1">⭐ (1)</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Обслуживание</label>
+                            <select name="service_rating" class="w-full px-3 py-2 border-2 border-gray-200 rounded-xl text-sm">
+                                <option value="5" selected>5</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Цена/качество</label>
+                            <select name="price_quality_rating" class="w-full px-3 py-2 border-2 border-gray-200 rounded-xl text-sm">
+                                <option value="5" selected>5</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Атмосфера</label>
+                            <select name="atmosphere_rating" class="w-full px-3 py-2 border-2 border-gray-200 rounded-xl text-sm">
+                                <option value="5" selected>5</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex gap-3 pt-2">
+                        <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-xl font-semibold hover:opacity-90 transition">Отправить</button>
+                        <button type="button" @click="showForm = false" class="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition">Отмена</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Персонал -->
+    {% if staff %}
+    <div class="bg-white mx-4 mt-4 rounded-2xl shadow-sm p-5 mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold text-gray-900">Персонал</h3>
+            <a href="#" class="text-sm text-purple-600 font-medium">Все сотрудники →</a>
+        </div>
+        <div class="space-y-3">
+            {% for member in staff %}
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                        {{ member.full_name|slice:":1" }}
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold text-gray-900">{{ member.full_name }}</p>
+                        <p class="text-xs text-gray-500">{{ member.get_position_display }}</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm font-bold text-gray-900">{{ member.csat_score }}%</p>
+                    <p class="text-xs text-gray-400">CSAT</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Липкая нижняя панель -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 flex gap-3 max-w-[420px] mx-auto z-30">
+        <a href="tel:{{ restaurant.phone }}" class="flex-1 bg-gray-100 text-gray-900 py-3.5 rounded-xl font-semibold text-center hover:bg-gray-200 transition">
+            📞 Позвонить
+        </a>
+        <a href="{% url 'core:booking_form' restaurant.slug %}" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3.5 rounded-xl font-semibold text-center hover:opacity-90 transition shadow-lg">
+            Забронировать стол
+        </a>
+    </div>
+
+</div>
+
+<!-- Lightbox скрипт для галереи -->
+{% if restaurant.gallery_images %}
+<script>
+    const images = {{ restaurant.gallery_images|safe }};
+    let currentIndex = 0;
+    
+    function openLightbox(index) {
+        // Простая реализация: можно расширить до полноценного модального окна
+        window.open(images[index], '_blank');
+    }
+</script>
+{% endif %}
+
+<script>
+    function openLightbox(imageSrc) {
+        document.getElementById('lightboxImage').src = imageSrc;
+        document.getElementById('photoLightbox').classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // Запрещаем прокрутку страницы
+    }
+
+    function closeLightbox() {
+        document.getElementById('photoLightbox').classList.add('hidden');
+        document.body.style.overflow = ''; // Возвращаем прокрутку
+    }
+</script>
+
+{% endblock %}

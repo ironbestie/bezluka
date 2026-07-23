@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}Бронь #{{ booking.id|slice:":8" }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 pb-24">
+    <!-- Шапка -->
+    <div class="bg-white shadow-sm p-4 flex items-center sticky top-0 z-10">
+        <a href="{% url 'core:order_history' %}" class="text-gray-600 mr-4 text-2xl leading-none">←</a>
+        <h1 class="text-lg font-bold text-gray-900 flex-1">Детали брони</h1>
+    </div>
+    
+    <!-- Уведомления -->
+    {% if messages %}
+    <div class="p-4">
+        {% for message in messages %}
+        <div class="bg-green-100 text-green-700 p-3 rounded-lg text-sm">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Карточка ресторана -->
+    <div class="bg-gradient-to-br from-purple-600 to-pink-600 p-6 text-white">
+        <div class="flex items-center mb-4">
+            <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center text-2xl mr-4">
+                🍽️
+            </div>
+            <div class="flex-1">
+                <h2 class="text-2xl font-bold">{{ booking.restaurant.name }}</h2>
+                <p class="text-sm opacity-90">{{ booking.restaurant.address }}</p>
+            </div>
+        </div>
+        
+        <!-- Статус -->
+        <div class="bg-white/20 backdrop-blur-sm rounded-xl p-3 flex items-center justify-between">
+            <span class="text-sm">Статус:</span>
+            {% if booking.status == 'confirmed' %}
+                <span class="font-semibold">✓ Подтверждено</span>
+            {% elif booking.status == 'pending' %}
+                <span class="font-semibold">⏳ Ожидает подтверждения</span>
+            {% elif booking.status == 'completed' %}
+                <span class="font-semibold">✓ Состоялось</span>
+            {% elif booking.status == 'cancelled_by_user' %}
+                <span class="font-semibold">✗ Отменено вами</span>
+            {% elif booking.status == 'cancelled_by_restaurant' %}
+                <span class="font-semibold">✗ Отменено рестораном</span>
+            {% elif booking.status == 'rejected' %}
+                <span class="font-semibold">✗ Отклонено</span>
+            {% elif booking.status == 'no_show' %}
+                <span class="font-semibold">— Не пришли</span>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Детали брони -->
+    <div class="p-4 space-y-4">
+        
+        <!-- Основная информация -->
+        <div class="bg-white rounded-2xl p-5 shadow-sm">
+            <h3 class="font-bold text-gray-900 mb-4">Информация о брони</h3>
+            
+            <div class="space-y-3">
+                <div class="flex justify-between py-2 border-b border-gray-100">
+                    <span class="text-gray-600">📅 Дата</span>
+                    <span class="font-semibold text-gray-900">{{ booking.booking_datetime|date:"d.m.Y" }}</span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-100">
+                    <span class="text-gray-600">🕐 Время</span>
+                    <span class="font-semibold text-gray-900">{{ booking.booking_datetime|time:"H:i" }}</span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-100">
+                    <span class="text-gray-600">👥 Гостей</span>
+                    <span class="font-semibold text-gray-900">{{ booking.party_size }}</span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-100">
+                    <span class="text-gray-600">📞 Телефон</span>
+                    <span class="font-semibold text-gray-900">{{ booking.guest_phone }}</span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-100">
+                    <span class="text-gray-600">👤 Имя</span>
+                    <span class="font-semibold text-gray-900">{{ booking.guest_name }}</span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-100">
+                    <span class="text-gray-600">📲 Источник</span>
+                    <span class="font-semibold text-gray-900">{{ booking.get_source_display }}</span>
+                </div>
+                {% if booking.amount %}
+                <div class="flex justify-between py-2">
+                    <span class="text-gray-600">💰 Сумма</span>
+                    <span class="font-bold text-gray-900 text-lg">{{ booking.amount }} ₽</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Пожелания -->
+        {% if booking.comment %}
+        <div class="bg-white rounded-2xl p-5 shadow-sm">
+            <h3 class="font-bold text-gray-900 mb-3">💬 Ваши пожелания</h3>
+            <p class="text-gray-700">{{ booking.comment }}</p>
+        </div>
+        {% endif %}
+        
+        <!-- Время создания -->
+        <div class="bg-gray-50 rounded-2xl p-4 text-center text-xs text-gray-500">
+            Бронь создана {{ booking.created_at|date:"d.m.Y в H:i" }}
+        </div>
+        
+        <!-- Кнопки действий -->
+        <div class="space-y-3">
+            <!-- Кнопка "Отменить" (только для активных броней) -->
+            {% if booking.status == 'confirmed' or booking.status == 'pending' %}
+                {% if booking.booking_datetime > now %}
+                <form method="post" action="{% url 'core:cancel_booking' booking.id %}" 
+                      onsubmit="return confirm('Вы уверены, что хотите отменить бронирование?');">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full bg-white border-2 border-red-200 text-red-600 py-3 rounded-xl font-semibold hover:bg-red-50 transition">
+                        Отменить бронь
+                    </button>
+                </form>
+                {% endif %}
+            {% endif %}
+            
+            <!-- Кнопка "Написать отзыв" (только для завершённых) -->
+            {% if booking.status == 'completed' %}
+            <a href="#" class="block w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-xl font-semibold text-center hover:opacity-90 transition">
+                ✍️ Оставить отзыв
+            </a>
+            {% endif %}
+            
+            <!-- Кнопка "Повторить бронь" -->
+            <a href="{% url 'core:booking_form' booking.restaurant.slug %}" 
+               class="block w-full bg-gray-100 text-gray-900 py-3 rounded-xl font-semibold text-center hover:bg-gray-200 transition">
+                🔄 Забронировать снова
+            </a>
+            
+            <!-- Кнопка "На страницу ресторана" -->
+            <a href="{% url 'core:restaurant_detail' booking.restaurant.slug %}" 
+               class="block w-full bg-white border border-gray-200 text-gray-700 py-3 rounded-xl font-semibold text-center hover:bg-gray-50 transition">
+                Перейти к ресторану
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

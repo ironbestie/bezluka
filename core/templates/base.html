@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>БезЛука — {% block title %}Рестораны{% endblock %}</title>
+    
+    <!-- Подключаем шрифт Inter для премиального вида -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        bg: {
+                            main: '#0E0B08',       // Основной фон
+                            card: '#1A1614',       // Фон карточек
+                            cardLight: '#221E1B',  // Фон карточек при наведении
+                        },
+                        text: {
+                            primary: '#F5F0E8',    // Основной текст (кремовый)
+                            secondary: '#A89F94',  // Вторичный текст (серый)
+                            muted: '#6B635B',      // Приглушенный текст
+                        },
+                        accent: {
+                            gold: '#E8C876',       // Золотой (рейтинги, акценты)
+                            goldDark: '#C8A961',
+                            blue: '#4A90E2',
+                            green: '#86F092',
+                        }
+                    },
+                    borderColor: {
+                        subtle: 'rgba(245, 240, 232, 0.06)', // Тонкая граница как в SVG
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            background-color: #0E0B08;
+            color: #F5F0E8;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .phone-container {
+            max-width: 420px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background-color: #0E0B08;
+            position: relative;
+            padding-bottom: 80px;
+        }
+        /* Скрываем скроллбар для горизонтальных списков, как в нативных приложениях */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        {% block content %}{% endblock %}
+        
+        <!-- Нижняя навигация (адаптирована под темную тему) -->
+        {% if user.is_authenticated and user.guest_profile %}
+            {% if request.resolver_match.url_name != 'restaurant_detail' and request.resolver_match.url_name != 'booking_form' and request.resolver_match.url_name != 'booking_success' %}
+            <nav class="fixed bottom-0 left-0 right-0 bg-[#1A1614]/90 backdrop-blur-md border-t border-subtle max-w-[420px] mx-auto z-50 pb-safe">
+                <div class="flex justify-around items-center h-16">
+                    <a href="{% url 'core:home' %}" class="flex flex-col items-center justify-center w-full h-full transition {% if request.resolver_match.url_name == 'home' %}text-[#E8C876]{% else %}text-[#A89F94] hover:text-[#F5F0E8]{% endif %}">
+                        <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                        <span class="text-[10px] font-medium">Главная</span>
+                    </a>
+                    <a href="#" class="flex flex-col items-center justify-center w-full h-full text-[#A89F94] hover:text-[#F5F0E8] transition">
+                        <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        <span class="text-[10px] font-medium">События</span>
+                    </a>
+                    <a href="{% url 'core:profile' %}" class="flex flex-col items-center justify-center w-full h-full transition {% if request.resolver_match.url_name == 'profile' %}text-[#E8C876]{% else %}text-[#A89F94] hover:text-[#F5F0E8]{% endif %}">
+                        <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        <span class="text-[10px] font-medium">Профиль</span>
+                    </a>
+                </div>
+            </nav>
+            {% endif %}
+        {% endif %}
+    </div>
+</body>
+</html>

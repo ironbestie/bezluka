@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block title %}Бронирование — {{ restaurant.name }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 pb-24">
+    <!-- Шапка -->
+    <div class="bg-white shadow-sm p-4 flex items-center sticky top-0 z-10">
+        <a href="{% url 'core:restaurant_detail' restaurant.slug %}" class="text-gray-600 mr-4">←</a>
+        <h1 class="text-lg font-bold text-gray-900 flex-1">Бронирование</h1>
+    </div>
+    
+    <!-- Информация о ресторане -->
+    <div class="bg-gradient-to-br from-purple-600 to-pink-600 p-6 text-white">
+        <h2 class="text-2xl font-bold mb-2">{{ restaurant.name }}</h2>
+        <p class="text-sm opacity-90">{{ restaurant.address }}</p>
+        <div class="flex items-center mt-3 text-sm">
+            <span class="bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 mr-2">
+                Кэшбэк {{ guest_profile.cashback_percent }}%
+            </span>
+            <span class="bg-white/20 backdrop-blur-sm rounded-full px-3 py-1">
+                {{ guest_profile.points_balance }} баллов
+            </span>
+        </div>
+    </div>
+    
+    <!-- Ошибки -->
+    {% if messages %}
+    <div class="p-4">
+        {% for message in messages %}
+        <div class="bg-red-100 text-red-700 p-3 rounded-lg text-sm">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Форма -->
+    <form method="post" class="p-4 space-y-4">
+        {% csrf_token %}
+        
+        <!-- Дата -->
+        <div class="bg-white rounded-2xl p-5">
+            <label class="block text-sm font-semibold text-gray-900 mb-3">📅 Дата</label>
+            <input 
+                type="date" 
+                name="booking_date" 
+                min="{% now 'Y-m-d' %}"
+                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none"
+                required
+            >
+        </div>
+        
+        <!-- Время -->
+        <div class="bg-white rounded-2xl p-5">
+            <label class="block text-sm font-semibold text-gray-900 mb-3">🕐 Время</label>
+            <input 
+                type="time" 
+                name="booking_time" 
+                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none"
+                required
+            >
+        </div>
+        
+        <!-- Количество гостей -->
+        <div class="bg-white rounded-2xl p-5">
+            <label class="block text-sm font-semibold text-gray-900 mb-3">👥 Количество гостей</label>
+            <div class="flex items-center justify-between">
+                <button type="button" onclick="decreaseGuests()" class="w-12 h-12 bg-gray-100 rounded-full text-2xl font-bold text-gray-600 hover:bg-gray-200">−</button>
+                <input 
+                    type="number" 
+                    name="party_size" 
+                    id="party_size"
+                    value="2" 
+                    min="1" 
+                    max="20"
+                    class="w-20 text-center text-3xl font-bold text-gray-900 border-0 focus:outline-none"
+                    readonly
+                >
+                <button type="button" onclick="increaseGuests()" class="w-12 h-12 bg-gray-100 rounded-full text-2xl font-bold text-gray-600 hover:bg-gray-200">+</button>
+            </div>
+        </div>
+        
+        <!-- Комментарий -->
+        <div class="bg-white rounded-2xl p-5">
+            <label class="block text-sm font-semibold text-gray-900 mb-3">💬 Пожелания</label>
+            <textarea 
+                name="comment" 
+                rows="3"
+                placeholder="Например: столик у окна, детский стульчик, аллергия на орехи..."
+                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none resize-none"
+            ></textarea>
+        </div>
+        
+        <!-- Информация о госте (автозаполнение) -->
+        <div class="bg-gray-50 rounded-2xl p-5">
+            <p class="text-sm text-gray-600 mb-2">Бронь будет оформлена на:</p>
+            <p class="font-semibold text-gray-900">{{ user.first_name }} {{ user.last_name }}</p>
+            <p class="text-sm text-gray-600">{{ user.username }}</p>
+        </div>
+        
+        <!-- Кнопка подтверждения -->
+        <button 
+            type="submit"
+            class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 rounded-xl font-bold text-lg hover:opacity-90 transition shadow-lg"
+        >
+            Подтвердить бронь
+        </button>
+        
+        <p class="text-xs text-gray-500 text-center">
+            Нажимая кнопку, вы соглашаетесь с условиями бронирования
+        </p>
+    </form>
+</div>
+
+<script>
+function increaseGuests() {
+    const input = document.getElementById('party_size');
+    const currentValue = parseInt(input.value);
+    if (currentValue < 20) {
+        input.value = currentValue + 1;
+    }
+}
+
+function decreaseGuests() {
+    const input = document.getElementById('party_size');
+    const currentValue = parseInt(input.value);
+    if (currentValue > 1) {
+        input.value = currentValue - 1;
+    }
+}
+</script>
+{% endblock %}

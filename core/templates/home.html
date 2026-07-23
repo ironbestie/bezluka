@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная — Рестораны{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+    <!-- Шапка -->
+    <div class="bg-white shadow-sm p-4 flex justify-between items-center sticky top-0 z-10">
+        <h1 class="text-xl font-bold text-gray-900">🍽️ БезЛука</h1>
+        <div class="flex items-center space-x-3">
+            <div class="text-right">
+                <p class="text-xs text-gray-500">{{ guest_profile.points_balance }} баллов</p>
+                <p class="text-xs font-semibold text-purple-600">{{ guest_profile.loyalty_level }}</p>
+            </div>
+            <a href="{% url 'core:logout' %}" class="text-sm text-red-600">Выйти</a>
+        </div>
+    </div>
+    
+    <!-- Приветствие -->
+    <div class="p-6 pb-2">
+        <h2 class="text-2xl font-bold text-gray-900">Привет, {{ user.first_name }}! 👋</h2>
+        <p class="text-gray-600 mt-1">Выбери ресторан для бронирования</p>
+    </div>
+    
+    <!-- Сетка ресторанов -->
+    <div class="px-6 pb-6">
+        <div class="grid grid-cols-1 gap-4">
+            {% for restaurant in restaurants %}
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-lg transition relative">
+                
+                <!-- Кнопка избранного (в правом верхнем углу карточки) -->
+                <form method="post" action="{% url 'core:toggle_favorite' restaurant.slug %}" class="absolute top-3 right-3 z-10">
+                    {% csrf_token %}
+                    <button type="submit" class="w-10 h-10 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white transition shadow-md">
+                        {% if restaurant in user_favorites %}
+                            <span class="text-red-500 text-xl">♥</span>
+                        {% else %}
+                            <span class="text-gray-400 text-xl">♡</span>
+                        {% endif %}
+                    </button>
+                </form>
+                
+                <a href="{% url 'core:restaurant_detail' restaurant.slug %}">
+                    <!-- Градиентная "обложка" -->
+                    <div class="h-32 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 relative flex items-end p-4">
+                        <div class="absolute top-3 left-3 bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 text-white text-xs font-semibold">
+                            ♡ LOYALTY
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-white drop-shadow-lg">{{ restaurant.name }}</h3>
+                            <p class="text-white/90 text-sm">{{ restaurant.city }}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Информация -->
+                    <div class="p-4">
+                        <p class="text-gray-700 font-medium">{{ restaurant.cuisine_type }}</p>
+                        <p class="text-gray-500 text-sm mt-1">{{ restaurant.address }}</p>
+                        
+                        <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-100">
+                            <div class="flex items-center">
+                                <span class="text-yellow-500 text-lg">⭐</span>
+                                <span class="font-semibold text-gray-900 ml-1">{{ restaurant.overall_rating }}</span>
+                                <span class="text-gray-500 text-sm ml-1">({{ restaurant.total_reviews }})</span>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-gray-700 font-semibold">{{ restaurant.avg_check }} ₽</p>
+                                <p class="text-gray-500 text-xs">средний чек</p>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% empty %}
+            <div class="bg-white rounded-2xl p-8 text-center">
+                <p class="text-gray-500 mb-2">Пока нет ресторанов</p>
+                <p class="text-sm text-gray-400">Запусти команду: <code class="bg-gray-100 px-2 py-1 rounded">python manage.py seed_data</code></p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

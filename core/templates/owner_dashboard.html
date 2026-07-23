@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Аналитика{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+        <!-- Шапка с кнопкой "Назад" -->
+    <div class="bg-white shadow-sm p-4 flex items-center sticky top-0 z-10">
+        <a href="{% url 'core:home' %}" class="text-gray-600 mr-4 text-2xl leading-none">←</a>
+        <h1 class="text-lg font-bold text-gray-900 flex-1">Аналитика</h1>
+        <!-- Можно добавить иконки экспорта/настроек как в макете -->
+        <button class="text-gray-600 text-xl mr-3">📤</button>
+        <button class="text-gray-600 text-xl">⚙️</button>
+    </div>
+    
+    <!-- Контент -->
+    <div class="p-6">
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">Привет, {{ user.first_name }}! 👔</h2>
+        <p class="text-gray-600 mb-6">Панель управления рестораном</p>
+        
+        <!-- Ключевые метрики -->
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="bg-white rounded-2xl p-4">
+                <p class="text-xs text-gray-500">Средний чек</p>
+                <p class="text-2xl font-bold text-gray-900">2 450 ₽</p>
+                <p class="text-xs text-green-600">↑ 12%</p>
+            </div>
+            <div class="bg-white rounded-2xl p-4">
+                <p class="text-xs text-gray-500">Уникальных гостей</p>
+                <p class="text-2xl font-bold text-gray-900">1 247</p>
+                <p class="text-xs text-green-600">↑ 8%</p>
+            </div>
+            <div class="bg-white rounded-2xl p-4">
+                <p class="text-xs text-gray-500">Обслужено столов</p>
+                <p class="text-2xl font-bold text-gray-900">3 892</p>
+                <p class="text-xs text-green-600">↑ 15%</p>
+            </div>
+            <div class="bg-white rounded-2xl p-4">
+                <p class="text-xs text-gray-500">Повторные визиты</p>
+                <p class="text-2xl font-bold text-gray-900">34%</p>
+                <p class="text-xs text-red-600">↓ 3%</p>
+            </div>
+        </div>
+        
+        <!-- Заглушка -->
+        <div class="bg-white rounded-2xl p-6 text-center">
+            <p class="text-gray-500 mb-4">🚧 Здесь будут графики и аналитика</p>
+            <p class="text-sm text-gray-400">Следующий шаг — добавим реальные данные из БД</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

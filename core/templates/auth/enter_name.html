@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Как вас зовут?{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex flex-col p-6">
+    <!-- Назад -->
+    <a href="{% url 'core:enter_code' %}" class="text-gray-600 mb-6 inline-block">
+        ← Назад
+    </a>
+    
+    <!-- Заголовок -->
+    <div class="text-center mb-8">
+        <h1 class="text-2xl font-bold text-gray-900">Как вас зовут?</h1>
+        <p class="text-sm text-gray-500 mt-2">Будем знать, как к вам лучше обращаться</p>
+    </div>
+    
+    <!-- Ошибки -->
+    {% if messages %}
+        {% for message in messages %}
+        <div class="bg-red-100 text-red-700 p-3 rounded-lg mb-4 text-sm">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+    
+    <!-- Форма -->
+    <form method="post" class="flex-1 space-y-4">
+        {% csrf_token %}
+        
+        <div>
+            <label class="block text-gray-700 text-sm font-medium mb-2">Ваше имя *</label>
+            <input 
+                type="text" 
+                name="first_name"
+                placeholder="Алиса"
+                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none"
+                required
+                autofocus
+            >
+        </div>
+        
+        <div>
+            <label class="block text-gray-700 text-sm font-medium mb-2">Ваша фамилия</label>
+            <input 
+                type="text" 
+                name="last_name"
+                placeholder="Лью"
+                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none"
+            >
+        </div>
+        
+        <button 
+            type="submit"
+            class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-xl mt-6 font-semibold hover:opacity-90 transition"
+        >
+            Сохранить
+        </button>
+    </form>
+</div>
+{% endblock %}
